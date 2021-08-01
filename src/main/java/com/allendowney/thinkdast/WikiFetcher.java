@@ -50,7 +50,10 @@ public class WikiFetcher {
 
         // assemble the file name
         String slash = File.separator;
-        String filename = "resources" + slash + realURL.getHost() + realURL.getPath();
+        // original
+//        String filename = "resources" + slash + realURL.getHost() + realURL.getPath();
+        // fixed to maven structure
+        String filename = realURL.getHost() + realURL.getPath();
 
         // read the file
         InputStream stream = WikiFetcher.class.getClassLoader().getResourceAsStream(filename);
