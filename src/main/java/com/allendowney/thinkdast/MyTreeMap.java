@@ -142,6 +142,7 @@ public class MyTreeMap<K, V> implements Map<K, V> {
         return set;
     }
 
+    // // In-Order Traversal
     private void keySetHelper(Set<K> set, Node node) {
         if (node == null) return;
         keySetHelper(set, node.left);
@@ -157,7 +158,7 @@ public class MyTreeMap<K, V> implements Map<K, V> {
     @Override
     public V put(K key, V value) {
         if (key == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException();
         }
         if (root == null) {
             root = makeNode(key, value);
@@ -168,6 +169,9 @@ public class MyTreeMap<K, V> implements Map<K, V> {
     }
 
     private V putHelper(Node node, K key, V value) {
+        if (key == null) {
+            throw new IllegalArgumentException("key is null.");
+        }
         // If key is already in the tree, it replaces the old value with the new, and returns the old value.
         if (equals(key, node.key)) {
             V oldValue = node.value;
