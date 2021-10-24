@@ -7,6 +7,7 @@ import redis.clients.jedis.Transaction;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -108,13 +109,28 @@ public class JedisIndex {
      * @param paragraphs Collection of elements that should be indexed.
      */
     public void indexPage(String url, Elements paragraphs) {
+        System.out.println("Indexing " + url);
+        // make a TermCounter and count the terms in the paragraphs
         TermCounter tc = new TermCounter(url);
         tc.processElements(paragraphs);
-        String key = termCounterKey(url);
+        // push the contents of the TermCounter to Redis
+        pushTermCounterToRedis(tc);
+    }
+
+    public List<Object> pushTermCounterToRedis(TermCounter tc) {
+        Transaction t = jedis.multi();
+        String url = tc.getLabel();
+        String hashname = termCounterKey(url);
+        // if this page has already been indexed, delete the old hash
+        t.del(hashname);
+        // for each term, add an entry in the TermCounter and a new
+        // member of the index
         for (String term : tc.keySet()) {
-            add(term, tc);
-            jedis.hset(key, term, tc.get(term).toString());
+            Integer count = tc.get(term);
+            t.hset(hashname, term, count.toString());
+            t.sadd(urlSetKey(term), url);
         }
+        return t.exec();
     }
 
     /**
